@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.javaboy.tcrelax.draw.dao.BenefitItemMapper">
+
+    <insert id="insert">
+        insert into benefit_activity_item
+        values ( #{gmtCreate}, #{gmtModified}, #{activityId}, #{benefitGroupId},#{benefitGroupName}
+               , #{startTime}, #{endTime}, #{configInfo})
+    </insert>
+
+
+    <select id="select" resultType="org.javaboy.tcrelax.draw.dataobject.BenefitItemDO">
+        select *
+        from benefit_activity_item
+        where activity_id  = #{activityId} and benefit_group_id = #{benefitGroupId}
+    </select>
+
+
+
+
+</mapper>
