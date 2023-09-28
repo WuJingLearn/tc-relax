@@ -18,7 +18,7 @@ import java.util.List;
 public class DrawRecordService {
 
 
-    @Autowired
+    @Autowired(required = false)
     private DrawRecordMapper drawRecordMapper;
 
 

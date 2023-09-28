@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class DrawItemService {
 
 
-    @Autowired
+    @Autowired(required = false)
     private BenefitItemMapper benefitItemMapper;
 
     @Autowired

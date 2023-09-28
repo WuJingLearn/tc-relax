@@ -5,7 +5,8 @@ import org.javaboy.tcrelax.common.exceptions.BizException;
 import org.javaboy.tcrelax.leadboard.LeaderBoardService;
 import org.javaboy.tcrelax.leadboard.check.LeaderBoardRuleChecker;
 import org.javaboy.tcrelax.leadboard.config.LeaderBoardConfig;
-import org.javaboy.tcrelax.leadboard.manager.LeaderBoardConfigLoader;
+import org.javaboy.tcrelax.leadboard.extension.LeaderBoardExtension;
+import org.javaboy.tcrelax.leadboard.manager.LeaderBoardConfigRepository;
 import org.javaboy.tcrelax.leadboard.memeber.Member;
 import org.javaboy.tcrelax.leadboard.repository.LeaderBoardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import java.util.List;
 public class LeaderBoardServiceImpl implements LeaderBoardService {
 
     @Autowired
-    private LeaderBoardConfigLoader configLoader;
+    private LeaderBoardConfigRepository leaderBoardConfigRepository;
 
     @Autowired
     private LeaderBoardExtension leaderBoardExt;
@@ -70,10 +71,16 @@ public class LeaderBoardServiceImpl implements LeaderBoardService {
     @Override
     public List<Member> queryTopN(String bizType, Integer topN, Long uerId) {
         checkLeaderBoard(bizType);
-        // 获取用户所在榜单
+        // 获取用户所在的逻辑榜单；
         String bid = leaderBoardExt.getBid(bizType, uerId);
         return leaderBoardRepository.queryTopN(bid, topN);
     }
+
+    @Override
+    public List<Member> queryTopN(String leaderBoardKey, Integer topN) {
+        return leaderBoardRepository.queryTopN(leaderBoardKey, topN);
+    }
+
 
     @Override
     public Long queryScore(String bizType, Long userId) {
@@ -84,7 +91,7 @@ public class LeaderBoardServiceImpl implements LeaderBoardService {
 
 
     private void checkLeaderBoard(String bizType) {
-        LeaderBoardConfig leaderBoardConfig = configLoader.getLeaderBoard(bizType);
+        LeaderBoardConfig leaderBoardConfig = leaderBoardConfigRepository.getLeaderBoardConfig(bizType);
         LeaderBoardRuleChecker.check(leaderBoardConfig);
     }
 }

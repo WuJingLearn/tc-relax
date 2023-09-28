@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DrawActivityService implements IDrawActivityService {
 
-    @Autowired
+    @Autowired(required = false)
     private BenefitActivityMapper activityMapper;
 
     @Autowired

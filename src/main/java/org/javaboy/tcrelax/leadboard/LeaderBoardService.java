@@ -35,6 +35,14 @@ public interface LeaderBoardService {
     List<Member> queryTopN(String bizType, Integer topN,Long userId);
 
     /**
+     * 根据逻辑榜单查询前topN
+     * weekRank_huangdi_2023828
+     * @param leaderBoardKey
+     * @return
+     */
+    List<Member> queryTopN(String leaderBoardKey,Integer topN);
+
+    /**
      * 查询分数
      *
      * @param bizType

@@ -19,13 +19,13 @@ public class RedisConfiguration {
     private String address;
     @Bean
     public Jedis jedis() {
-        return new Jedis(address);
+        return new Jedis();
     }
 
     @Bean
     public RedissonClient redisson() {
         Config config = new Config();
-        config.useSingleServer().setAddress(address);
+        config.useSingleServer().setAddress("redis://"+address);
         return Redisson.create(config);
     }
 }

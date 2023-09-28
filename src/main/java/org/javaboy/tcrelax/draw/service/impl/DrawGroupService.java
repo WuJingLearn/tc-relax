@@ -24,7 +24,7 @@ public class DrawGroupService implements IDrawGroupService {
     @Autowired
     private DrawActivityService drawActivityService;
 
-    @Autowired
+    @Autowired(required = false)
     private BenefitGroupMapper benefitGroupMapper;
 
     public void createDrawGroup(DrawGroupDTO dto) {

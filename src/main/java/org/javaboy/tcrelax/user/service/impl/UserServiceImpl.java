@@ -13,7 +13,7 @@ import org.springframework.util.Assert;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
+    @Autowired(required = false)
     UserMapper userMapper;
 
     @Override

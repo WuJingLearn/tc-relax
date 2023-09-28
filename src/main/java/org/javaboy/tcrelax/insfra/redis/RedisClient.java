@@ -36,8 +36,4 @@ public class RedisClient {
         return redissonClient.getBucket(key).delete();
     }
 
-    public void eval(String script, List<Object> keys, Object... values) {
-        RScript rscript = redissonClient.getScript();
-        rscript.eval(RScript.Mode.READ_WRITE, script, RScript.ReturnType.BOOLEAN, keys, values);
-    }
 }

@@ -32,7 +32,7 @@ public class DrawActivityConfigManager {
     @Autowired
     private RedisClient redisClient;
 
-    @Autowired
+    @Autowired(required = false)
     private ConfigService configService;
 
     @Autowired
