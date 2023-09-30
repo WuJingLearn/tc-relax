@@ -21,6 +21,7 @@ import java.util.List;
 @Component
 public class LeaderBoardServiceImpl implements LeaderBoardService {
 
+
     @Autowired
     private LeaderBoardConfigRepository leaderBoardConfigRepository;
 

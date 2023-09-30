@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author:majin.wj 排行榜扩展点
+ * 这里可以重构一下。
  */
 @Component
 public class LeaderBoardExtension {

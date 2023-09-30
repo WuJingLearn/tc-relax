@@ -27,6 +27,9 @@ public class LeaderBoardRepositoryImpl implements LeaderBoardRepository {
     private static final String LEADER_KEY = "leaderboard_%s_%s";
 
 
+    /**
+     * 使用lua脚本保证进入排行时的原子性；
+     */
     private String enterLeaderBoardScript = "local size = redis.call('ZCARD', KEYS[1])\n" +
             "if size < tonumber(ARGV[3]) then\n" +
             "    redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2])\n" +
