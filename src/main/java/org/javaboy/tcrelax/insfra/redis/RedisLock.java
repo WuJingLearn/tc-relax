@@ -1,10 +1,9 @@
 package org.javaboy.tcrelax.insfra.redis;
 
+import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.locks.Lock;
 
 /**
  * @author:majin.wj
@@ -14,7 +13,9 @@ public class RedisLock {
 
     @Autowired
     RedissonClient redissonClient;
-    public Lock getLock(String lockKey) {
+    public RLock getLock(String lockKey) {
         return redissonClient.getLock(lockKey);
     }
+
+
 }
