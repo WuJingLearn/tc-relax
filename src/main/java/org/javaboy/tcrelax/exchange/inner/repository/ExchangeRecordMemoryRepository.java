@@ -2,12 +2,12 @@ package org.javaboy.tcrelax.exchange.inner.repository;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.collections4.CollectionUtils;
+import org.javaboy.tcrelax.common.PageResult;
 import org.javaboy.tcrelax.exchange.dto.AwardRecordDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,19 +24,30 @@ public class ExchangeRecordMemoryRepository implements ExchangeRecordRepository 
     private Jedis jedis;
 
     @Override
-    public List<AwardRecordDTO> queryUserRecord(String uid, String scene) {
-        List<String> awardRecords = jedis.lrange(String.format(USER_EXCHANGE_RECORD_KEY, scene, uid), 0, -1);
+    public PageResult<List<AwardRecordDTO>> queryUserRecord(String uid, String scene, Integer page, Integer pageSize) {
+        PageResult<List<AwardRecordDTO>> pageResult = new PageResult<>();
+        String recordKey = String.format(USER_EXCHANGE_RECORD_KEY, scene, uid);
+        Long total = jedis.llen(recordKey);
+        pageResult.setTotalSize(total);
+
+        int start = (page - 1) * pageSize;
+        int end = page * pageSize - 1;
+
+        List<String> awardRecords = jedis.lrange(recordKey, start, end);
+        pageResult.setCurPageSize(awardRecords.size());
+        pageResult.setTotalPage(total / pageSize);
         if (CollectionUtils.isNotEmpty(awardRecords)) {
-            return awardRecords.stream().map(str -> {
+            List<AwardRecordDTO> awardRecordDTOS = awardRecords.stream().map(str -> {
                 return JSON.parseObject(str, AwardRecordDTO.class);
             }).collect(Collectors.toList());
+            pageResult.setData(awardRecordDTOS);
         }
-        return Collections.emptyList();
+        return pageResult;
     }
 
     @Override
     public void addUserRecord(AwardRecordDTO recordDTO) {
         String awardRecord = JSON.toJSONString(recordDTO);
-        jedis.lpush(String.format(USER_EXCHANGE_RECORD_KEY,recordDTO.getUid(),recordDTO.getScene()),awardRecord);
+        jedis.lpush(String.format(USER_EXCHANGE_RECORD_KEY, recordDTO.getUid(), recordDTO.getScene()), awardRecord);
     }
 }

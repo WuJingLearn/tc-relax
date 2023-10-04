@@ -52,4 +52,28 @@ config.setBenefitConfigList(benefitConfigList);
 ```
 
 
-## 
+## 测试接口
+
+### 查询用户兑换记录
+http://localhost:8080/queryExchangeRecord?uid=zs&scene=cfHoliday&page=1&pageSize=10
+![img.png](img/img.png)
+
+### 预览商品
+当前有库存时展示内容
+![img.png](img/preview2.png)
+当前无库存时展示内容
+![img.png](img/preview3.png)
+
+
+
+### 兑换商品`
+
+兑换成功时
+![img.png](img/exchange_success.png)
+
+触发疲劳度限制时
+![img.png](img/arrive_fatigue.png)
+
+库存不足时
+![img.png](img/notenough.png)
+

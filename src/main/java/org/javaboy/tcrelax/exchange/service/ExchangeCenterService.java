@@ -1,5 +1,6 @@
 package org.javaboy.tcrelax.exchange.service;
 
+import org.javaboy.tcrelax.common.PageResult;
 import org.javaboy.tcrelax.common.TcResult;
 import org.javaboy.tcrelax.exchange.ExchangeRequest;
 import org.javaboy.tcrelax.exchange.dto.ActivityDetailDTO;
@@ -29,6 +30,6 @@ public interface ExchangeCenterService {
     TcResult<ActivityDetailDTO> preview(ExchangeRequest request);
 
 
-    TcResult<List<AwardRecordDTO>> queryExchangeRecord(ExchangeRequest request);
+    TcResult<PageResult<List<AwardRecordDTO>>> queryExchangeRecord(String scene, String uid, Integer page, Integer pageSize);
 
 }

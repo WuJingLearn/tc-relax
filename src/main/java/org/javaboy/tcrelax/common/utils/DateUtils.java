@@ -50,8 +50,9 @@ public class DateUtils {
     }
 
     public static Long period(Date start, Date end) {
-        return (start.getTime() - end.getTime()) / 1000;
+        return (end.getTime() - start.getTime()) / 1000;
     }
+
 
 
 }

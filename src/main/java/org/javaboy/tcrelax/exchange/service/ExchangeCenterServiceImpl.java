@@ -1,6 +1,7 @@
 package org.javaboy.tcrelax.exchange.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.javaboy.tcrelax.common.PageResult;
 import org.javaboy.tcrelax.common.TcResult;
 import org.javaboy.tcrelax.common.exceptions.BizException;
 import org.javaboy.tcrelax.common.exceptions.ExceptionEnum;
@@ -140,19 +141,21 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
             BenefitDTO benefitDTO = new BenefitDTO();
             if (!benefitConfig.isUseInventory()) {
                 // 不限量
-                benefitDTO.setTotalLimit(false);
-                benefitDTO.setHourAmount(true);
+                benefitDTO.setTotalText("总库存:不限量");
+                benefitDTO.setHourText("当前小时是否还有剩余:是");
             } else {
                 benefitDTO.setTotalLimit(true);
                 ExchangeInventoryConfig inventoryConfig = benefitConfig.getInventoryConfig();
                 String inventoryStrategy = inventoryConfig.getInventoryStrategy();
                 // 总库存
                 Integer totalAmount = inventoryConfig.getTotalAmount();
-                benefitDTO.setTotalAmount(totalAmount);
+//                benefitDTO.setTotalAmount(totalAmount);
+                benefitDTO.setTotalText("总限量:" + totalAmount);
                 // 当前库存
                 Integer amount = inventoryService.queryBenefitInventory(request.getScene(), benefitConfig.getBenefitCode(), inventoryStrategy);
                 // 当前小时是否还有库存
-                benefitDTO.setHourAmount(amount > 0);
+//                benefitDTO.setHourAmount(amount > 0);
+                benefitDTO.setHourText("当前小时是否还有剩余:" + ((amount > 0 ? "是" : "否")));
             }
             benefitDTO.setUrl(benefitDTO.getUrl());
             benefitDTO.setBenefitCode(benefitDTO.getBenefitCode());
@@ -164,8 +167,8 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
 
 
     @Override
-    public TcResult<List<AwardRecordDTO>> queryExchangeRecord(ExchangeRequest request) {
-        return null;
+    public TcResult<PageResult<List<AwardRecordDTO>>> queryExchangeRecord(String scene, String uid, Integer page, Integer pageSize) {
+        return TcResult.success(recordService.queryUserRecord(scene, uid, page, pageSize));
     }
 
     private ExchangeContext buildExchangeContext(ExchangeRequest request) {
@@ -175,9 +178,7 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
         context.setUserId(request.getUid());
         context.setRequest(request);
         context.setActivityConfig(activityConfig);
-        ExchangeBenefitConfig benefitConfig = activityConfig.getBenefitConfigList().stream()
-                .filter(benefit -> request.getBenefitCode().equals(benefit.getBenefitCode()))
-                .findFirst().orElse(null);
+        ExchangeBenefitConfig benefitConfig = activityConfig.getBenefitConfigList().stream().filter(benefit -> request.getBenefitCode().equals(benefit.getBenefitCode())).findFirst().orElse(null);
         if (benefitConfig == null) {
             throw new BizException(ExceptionEnum.BENEFIT_NOT_EXISTS);
         }
@@ -226,7 +227,7 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
         return awardRecordDTO;
     }
 
-    private BenefitDTO convert(AwardRecordDTO awardRecordDTO){
+    private BenefitDTO convert(AwardRecordDTO awardRecordDTO) {
         BenefitDTO benefitDTO = new BenefitDTO();
         benefitDTO.setUrl(awardRecordDTO.getUrl());
         benefitDTO.setBenefitCode(awardRecordDTO.getBenefitCode());

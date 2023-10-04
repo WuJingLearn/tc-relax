@@ -1,5 +1,6 @@
 package org.javaboy.tcrelax.exchange.inner.repository;
 
+import org.javaboy.tcrelax.common.PageResult;
 import org.javaboy.tcrelax.exchange.dto.AwardRecordDTO;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
  */
 public interface ExchangeRecordRepository {
 
-    List<AwardRecordDTO> queryUserRecord(String uid, String scene);
+    PageResult<List<AwardRecordDTO>> queryUserRecord(String uid, String scene, Integer page, Integer pageSize);
 
     void addUserRecord(AwardRecordDTO recordDTO);
 

@@ -17,6 +17,16 @@ public class BenefitDTO {
     private String url;
 
     /**
+     * 总库存是否剩余文案
+     */
+    private String totalText;
+
+    /**
+     * 小时库存是否剩余文案
+     */
+    private String hourText;
+
+    /**
      * 是否有总额限制.不限量显示不限量文案，限量显示totalAmount数额
      */
     private boolean totalLimit;

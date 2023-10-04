@@ -1,5 +1,6 @@
 package org.javaboy.tcrelax.exchange.inner.record;
 
+import org.javaboy.tcrelax.common.PageResult;
 import org.javaboy.tcrelax.exchange.dto.AwardRecordDTO;
 import org.javaboy.tcrelax.exchange.inner.repository.ExchangeRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,8 @@ public class ExchangeRecordServiceImpl implements ExchangeRecordService {
     private ExchangeRecordRepository recordRepository;
 
     @Override
-    public List<AwardRecordDTO> queryUserRecord(String uid, String scene) {
-        return recordRepository.queryUserRecord(uid,scene);
+    public PageResult<List<AwardRecordDTO>> queryUserRecord(String uid, String scene, Integer page, Integer pageSize) {
+        return recordRepository.queryUserRecord(uid, scene,page,pageSize);
     }
 
     @Override
