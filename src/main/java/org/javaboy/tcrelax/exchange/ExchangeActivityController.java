@@ -11,10 +11,7 @@ import org.javaboy.tcrelax.exchange.manager.ExchangeConfigLoader;
 import org.javaboy.tcrelax.exchange.service.ExchangeCenterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,6 +19,7 @@ import java.util.List;
  * @author:majin.wj
  */
 @RestController
+@CrossOrigin
 public class ExchangeActivityController {
 
     @Autowired

@@ -1,4 +1,4 @@
-package org.javaboy.tcrelax.draw.dao;
+package org.javaboy.tcrelax.dal.draw;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.javaboy.tcrelax.draw.dataobject.BenefitItemDO;

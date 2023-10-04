@@ -2,7 +2,7 @@ package org.javaboy.tcrelax.draw.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.javaboy.tcrelax.draw.dao.BenefitItemMapper;
+import org.javaboy.tcrelax.dal.draw.BenefitItemMapper;
 import org.javaboy.tcrelax.draw.dataobject.BenefitItemDO;
 import org.javaboy.tcrelax.draw.dto.DrawGroupDTO;
 import org.javaboy.tcrelax.draw.dto.DrawItemDTO;
@@ -11,7 +11,6 @@ import org.javaboy.tcrelax.draw.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;

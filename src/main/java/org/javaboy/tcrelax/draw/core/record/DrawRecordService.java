@@ -1,7 +1,7 @@
 package org.javaboy.tcrelax.draw.core.record;
 
 import com.alibaba.fastjson.TypeReference;
-import org.javaboy.tcrelax.draw.dao.DrawRecordMapper;
+import org.javaboy.tcrelax.dal.draw.DrawRecordMapper;
 import org.javaboy.tcrelax.draw.dataobject.DrawRecordDO;
 import org.javaboy.tcrelax.draw.enums.CacheKeyEnum;
 import org.javaboy.tcrelax.insfra.utils.CacheKey;

@@ -3,7 +3,7 @@ package org.javaboy.tcrelax.draw.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.javaboy.tcrelax.draw.dao.BenefitActivityMapper;
+import org.javaboy.tcrelax.dal.draw.BenefitActivityMapper;
 import org.javaboy.tcrelax.draw.dataobject.BenefitActivityDO;
 import org.javaboy.tcrelax.draw.dto.DrawActivityDTO;
 import org.javaboy.tcrelax.draw.dto.DrawGroupDTO;

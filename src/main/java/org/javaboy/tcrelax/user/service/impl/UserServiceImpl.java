@@ -1,6 +1,6 @@
 package org.javaboy.tcrelax.user.service.impl;
 
-import org.javaboy.tcrelax.user.dao.UserMapper;
+import org.javaboy.tcrelax.dal.user.UserMapper;
 import org.javaboy.tcrelax.user.entity.User;
 import org.javaboy.tcrelax.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

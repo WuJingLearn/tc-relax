@@ -1,4 +1,4 @@
-package org.javaboy.tcrelax.user.dao;
+package org.javaboy.tcrelax.dal.user;
 
 import org.javaboy.tcrelax.user.entity.User;
 

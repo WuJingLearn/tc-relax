@@ -2,7 +2,7 @@ package org.javaboy.tcrelax.draw.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.javaboy.tcrelax.draw.dao.BenefitGroupMapper;
+import org.javaboy.tcrelax.dal.draw.BenefitGroupMapper;
 import org.javaboy.tcrelax.draw.dataobject.BenefitGroupDO;
 import org.javaboy.tcrelax.draw.dto.DrawActivityDTO;
 import org.javaboy.tcrelax.draw.dto.DrawGroupDTO;
