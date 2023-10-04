@@ -24,17 +24,17 @@ public class FatigueServiceImpl implements FatigueService {
     /**
      * 活动疲劳度all类型 key，活动期间
      */
-    private static final String ACTIVITY_FATIGUE_KEY = "activity_fatigue_%s_%s";
+    private static final String ACTIVITY_FATIGUE_KEY = "activity_all_fatigue_%s_%s";
 
     /**
      * 活动疲劳度,天维度
      */
-    private static final String ACTIVITY_FATIGUE_DAY_KEY = "activity_fatigue_%s_%s_%s";
+    private static final String ACTIVITY_FATIGUE_DAY_KEY = "activity_day_fatigue_%s_%s_%s";
 
     /**
      * 活动疲劳度,周维度
      */
-    private static final String ACTIVITY_FATIGUE_WEEK_KEY = "activity_fatigue_%s_%s_%s";
+    private static final String ACTIVITY_FATIGUE_WEEK_KEY = "activity_week_fatigue_%s_%s_%s";
 
     /**
      * scene_benefitCode_uid
@@ -63,12 +63,12 @@ public class FatigueServiceImpl implements FatigueService {
         String fatigueKey = null;
 
 
-        switch (FatigueType.valueOf(fatigueConfig.getFatigueType())) {
+        switch (FatigueType.valueOf(fatigueConfig.getFatigueType().toUpperCase())) {
             case ALL:
                 fatigueKey = String.format(ACTIVITY_FATIGUE_KEY, activityConfig.getScene(), exchangeContext.getUserId());
                 break;
             case DAY:
-                fatigueKey = String.format(ACTIVITY_FATIGUE_DAY_KEY, activityConfig.getScene(), DateUtils.nowStr(), exchangeContext.getUserId());
+                fatigueKey = String.format(ACTIVITY_FATIGUE_DAY_KEY, activityConfig.getScene(), DateUtils.dateStr(), exchangeContext.getUserId());
                 break;
             case WEEK:
                 fatigueKey = String.format(ACTIVITY_FATIGUE_WEEK_KEY, activityConfig.getScene(), DateUtils.getFistDayOfWeak(), exchangeContext.getUserId());
@@ -77,7 +77,7 @@ public class FatigueServiceImpl implements FatigueService {
 
         Integer currentTime = Optional.ofNullable(jedis.get(fatigueKey)).map(Integer::valueOf).orElse(0);
         // 超过疲劳度
-        if (currentTime > fatigueConfig.getAmount()) {
+        if (currentTime >= fatigueConfig.getAmount()) {
             log.info("scene:{} userId:{},fatigueType:{},currentTime:{},fatigue:{} 达到活动级别疲劳度限制",
                     activityConfig.getActivityName(), exchangeContext.getUserId(), fatigueConfig.getFatigueType(),
                     currentTime, fatigueConfig.getAmount());
@@ -87,20 +87,19 @@ public class FatigueServiceImpl implements FatigueService {
 
     @Override
     public void checkBenefitFatigue(ExchangeContext exchangeContext) {
-
-        ExchangeFatigueConfig fatigueConfig = exchangeContext.getActivityConfig().getFatigueConfig();
+        ExchangeFatigueConfig fatigueConfig = exchangeContext.getBenefitConfig().getFatigueConfig();
         if (fatigueConfig == null) {
             return;
         }
         ExchangeActivityConfig activityConfig = exchangeContext.getActivityConfig();
         String benefitCode = exchangeContext.getRequest().getBenefitCode();
         String fatigueKey = null;
-        switch (FatigueType.valueOf(fatigueConfig.getFatigueType())) {
+        switch (FatigueType.valueOf(fatigueConfig.getFatigueType().toUpperCase())) {
             case ALL:
                 fatigueKey = String.format(BENEFIT_FATIGUE_KEY, activityConfig.getScene(), benefitCode, exchangeContext.getUserId());
                 break;
             case DAY:
-                fatigueKey = String.format(BENEFIT_FATIGUE_DAY_KEY, activityConfig.getScene(), benefitCode, DateUtils.nowStr(), exchangeContext.getUserId());
+                fatigueKey = String.format(BENEFIT_FATIGUE_DAY_KEY, activityConfig.getScene(), benefitCode, DateUtils.dateStr(), exchangeContext.getUserId());
                 break;
             case WEEK:
                 fatigueKey = String.format(BENEFIT_FATIGUE_WEEK_KEY, activityConfig.getScene(), benefitCode, DateUtils.getFistDayOfWeak(), exchangeContext.getUserId());
@@ -109,17 +108,63 @@ public class FatigueServiceImpl implements FatigueService {
 
         Integer currentTime = Optional.ofNullable(jedis.get(fatigueKey)).map(Integer::valueOf).orElse(0);
         // 超过疲劳度
-        if (currentTime > fatigueConfig.getAmount()) {
+        if (currentTime >= fatigueConfig.getAmount()) {
             log.info("scene:{},benefitCode:{},userId:{},fatigueType:{},currentTime:{},fatigue:{} 达到权益级别疲劳度限制",
                     activityConfig.getActivityName(), benefitCode, exchangeContext.getUserId(), fatigueConfig.getFatigueType(),
                     currentTime, fatigueConfig.getAmount());
-            throw new BizException(ExceptionEnum.BENEFIT_FATIGUE.getCode(),"当前周期商品兑换到达最大限制");
+            throw new BizException(ExceptionEnum.BENEFIT_FATIGUE.getCode(), "当前周期商品兑换到达最大限制");
 
         }
     }
 
     @Override
-    public void recordUserFatigue(ExchangeContext exchangeContext) {
+    public void recordActivityFatigue(ExchangeContext exchangeContext) {
+        ExchangeFatigueConfig fatigueConfig = exchangeContext.getActivityConfig().getFatigueConfig();
+        if (fatigueConfig == null) {
+            return;
+        }
+        ExchangeActivityConfig activityConfig = exchangeContext.getActivityConfig();
+        String fatigueKey = null;
 
+
+        switch (FatigueType.valueOf(fatigueConfig.getFatigueType().toUpperCase())) {
+            case ALL:
+                fatigueKey = String.format(ACTIVITY_FATIGUE_KEY, activityConfig.getScene(), exchangeContext.getUserId());
+                break;
+            case DAY:
+                fatigueKey = String.format(ACTIVITY_FATIGUE_DAY_KEY, activityConfig.getScene(), DateUtils.dateStr(), exchangeContext.getUserId());
+                break;
+            case WEEK:
+                fatigueKey = String.format(ACTIVITY_FATIGUE_WEEK_KEY, activityConfig.getScene(), DateUtils.getFistDayOfWeak(), exchangeContext.getUserId());
+                break;
+        }
+        Long incr = jedis.incr(fatigueKey);
+        jedis.expire(fatigueKey, DateUtils.period(activityConfig.getStartTime(), activityConfig.getEndTime()));
+        log.info("活动:{}, uid:{},记录一次活动级别疲劳度,当前疲劳度:{}", activityConfig.getScene(), exchangeContext.getUserId(), incr);
+    }
+
+    @Override
+    public void recordBenefitFatigue(ExchangeContext exchangeContext) {
+        ExchangeFatigueConfig fatigueConfig = exchangeContext.getBenefitConfig().getFatigueConfig();
+        if (fatigueConfig == null) {
+            return;
+        }
+        ExchangeActivityConfig activityConfig = exchangeContext.getActivityConfig();
+        String benefitCode = exchangeContext.getRequest().getBenefitCode();
+        String fatigueKey = null;
+        switch (FatigueType.valueOf(fatigueConfig.getFatigueType().toUpperCase())) {
+            case ALL:
+                fatigueKey = String.format(BENEFIT_FATIGUE_KEY, activityConfig.getScene(), benefitCode, exchangeContext.getUserId());
+                break;
+            case DAY:
+                fatigueKey = String.format(BENEFIT_FATIGUE_DAY_KEY, activityConfig.getScene(), benefitCode, DateUtils.dateStr(), exchangeContext.getUserId());
+                break;
+            case WEEK:
+                fatigueKey = String.format(BENEFIT_FATIGUE_WEEK_KEY, activityConfig.getScene(), benefitCode, DateUtils.getFistDayOfWeak(), exchangeContext.getUserId());
+                break;
+        }
+        Long incr = jedis.incr(fatigueKey);
+        jedis.expire(fatigueKey,DateUtils.period(activityConfig.getStartTime(),activityConfig.getEndTime()));
+        log.info("活动:{},权益code:{}, uid:{},记录一次权益级别疲劳度,当前疲劳度:{}", activityConfig.getScene(), benefitCode, exchangeContext.getUserId(), incr);
     }
 }

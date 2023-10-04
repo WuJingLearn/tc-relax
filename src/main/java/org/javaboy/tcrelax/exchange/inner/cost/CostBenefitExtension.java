@@ -9,7 +9,7 @@ public interface CostBenefitExtension {
      * 查询数额
      * @return
      */
-    Integer queryAmount();
+    Integer queryAmount(String uid);
 
     boolean deductUserAsset(Integer amount,String uid);
 

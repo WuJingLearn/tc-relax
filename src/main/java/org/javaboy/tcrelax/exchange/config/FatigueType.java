@@ -4,7 +4,7 @@ public enum FatigueType {
     // 天内
     DAY("day"), // 周内
     WEEK("week"), // 周期内
-    ALL("all");
+    ALL("all"); // 活动周期内
 
 
     private String type;

@@ -1,7 +1,7 @@
 package org.javaboy.tcrelax.exchange.inner.inventory;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.javaboy.tcrelax.common.utils.DateUtils;
 import org.javaboy.tcrelax.exchange.config.ExchangeActivityConfig;
 import org.javaboy.tcrelax.exchange.config.ExchangeBenefitConfig;
 import org.javaboy.tcrelax.exchange.config.ExchangeInventoryConfig;
@@ -35,11 +35,6 @@ public class SimpleCacheInventoryManager implements InventoryManager {
     private Jedis jedis;
 
 
-    /**
-     * 初始化库存: 根据库存策略,将库存提前设置到缓存中
-     *
-     * @param activityConfig
-     */
     @Override
     public void initBenefitInventory(ExchangeActivityConfig activityConfig) {
         String scene = activityConfig.getScene();
@@ -57,6 +52,7 @@ public class SimpleCacheInventoryManager implements InventoryManager {
             Integer hourAmount = inventoryConfig.getHourAmount();
             if (InventoryStrategyEnum.isAllIn(inventoryConfig.getInventoryStrategy())) {
                 jedis.set(String.format(ACTIVITY_BENEFIT_TOTAL_AMOUNT, scene, exchangeBenefitConfig.getBenefitCode()), String.valueOf(totalAmount));
+                log.info("初始化总库存,scene:{},benefitCode:{},amount:{}", scene, exchangeBenefitConfig.getBenefitCode(), totalAmount);
             } else if (InventoryStrategyEnum.isHour(inventoryConfig.getInventoryStrategy())) {
                 Date startTime = activityConfig.getStartTime();
                 Calendar instance = Calendar.getInstance();
@@ -65,17 +61,15 @@ public class SimpleCacheInventoryManager implements InventoryManager {
                 int hiveCount = totalAmount % hourAmount == 0 ? totalAmount / hourAmount : totalAmount / hourAmount + 1;
 
                 for (int i = 0; i < hiveCount; i++) {
-                    instance.add(Calendar.DATE, i);
-                    int year = instance.get(Calendar.YEAR);
-                    int month = instance.get(Calendar.MONTH) + 1;
-                    int day = instance.get(Calendar.DATE);
-                    int hour = instance.get(Calendar.HOUR);
-                    String hourHiveKey = getHourHiveKey(scene, exchangeBenefitConfig.getBenefitCode(), year, month, day, hour);
+                    String hourHiveKey = getHourHiveKey(scene, exchangeBenefitConfig.getBenefitCode(), DateUtils.hourStr(instance.getTime()));
                     Integer curHourAmount = hourAmount;
                     if (i == hiveCount - 1) {
-                        curHourAmount = totalAmount % hourAmount;
+                        curHourAmount = totalAmount % hourAmount == 0 ? hourAmount : totalAmount % hourAmount;
                     }
                     jedis.set(hourHiveKey, String.valueOf(curHourAmount));
+                    // 增加1小时
+                    instance.add(Calendar.HOUR, 1);
+                    log.info("初始化波次库存,scene:{},benefitCode:{},hourHiveKey:{},amount:{}", scene, exchangeBenefitConfig.getBenefitCode(), hourHiveKey, curHourAmount);
                 }
             }
 
@@ -89,8 +83,7 @@ public class SimpleCacheInventoryManager implements InventoryManager {
             String amount = jedis.get(String.format(ACTIVITY_BENEFIT_TOTAL_AMOUNT, scene, benefitCode));
             return Optional.ofNullable(amount).map(Integer::valueOf).orElse(0);
         } else if (InventoryStrategyEnum.isHour(type)) {
-            Calendar instance = Calendar.getInstance();
-            String hourHiveKey = getHourHiveKey(scene, benefitCode, instance.get(Calendar.YEAR), instance.get(Calendar.MONTH), instance.get(Calendar.DATE), instance.get(Calendar.HOUR));
+            String hourHiveKey = getHourHiveKey(scene, benefitCode, DateUtils.hourStr());
             String amount = jedis.get(hourHiveKey);
             return Optional.ofNullable(amount).map(Integer::valueOf).orElse(0);
         }
@@ -102,15 +95,16 @@ public class SimpleCacheInventoryManager implements InventoryManager {
         if (InventoryStrategyEnum.isAllIn(type)) {
             String key = String.format(ACTIVITY_BENEFIT_TOTAL_AMOUNT, scene, benefitCode);
             Long remainAmount = jedis.decrBy(key, amount);
+            log.info("扣减库存 scene:{},benefitCode:{} 当前还剩库存:{}", scene, benefitCode, remainAmount);
             if (remainAmount < 0) {
                 jedis.incrBy(key, amount);
                 return false;
             }
             return true;
         } else if (InventoryStrategyEnum.isHour(type)) {
-            Calendar instance = Calendar.getInstance();
-            String hourHiveKey = getHourHiveKey(scene, benefitCode, instance.get(Calendar.YEAR), instance.get(Calendar.MONTH), instance.get(Calendar.DATE), instance.get(Calendar.HOUR));
+            String hourHiveKey = getHourHiveKey(scene, benefitCode, DateUtils.hourStr());
             Long remainAmount = jedis.decrBy(hourHiveKey, amount);
+            log.info("扣减库存scene:{},benefitCode:{} 当前小时还剩库存:{}", scene, benefitCode, remainAmount);
             if (remainAmount < 0) {
                 jedis.incrBy(hourHiveKey, amount);
                 return false;
@@ -124,15 +118,16 @@ public class SimpleCacheInventoryManager implements InventoryManager {
     public void increaseBenefitInventory(String scene, String benefitCode, String type, Integer amount) {
         if (InventoryStrategyEnum.isAllIn(type)) {
             String key = String.format(ACTIVITY_BENEFIT_TOTAL_AMOUNT, scene, benefitCode);
-            jedis.incrBy(key, amount);
+            Long remainAmount = jedis.incrBy(key, amount);
+            log.info("恢复库存 scene:{},benefitCode:{} 当前还剩库存:{}", scene, benefitCode, remainAmount);
         } else if (InventoryStrategyEnum.isHour(type)) {
-            Calendar instance = Calendar.getInstance();
-            String hourHiveKey = getHourHiveKey(scene, benefitCode, instance.get(Calendar.YEAR), instance.get(Calendar.MONTH), instance.get(Calendar.DATE), instance.get(Calendar.HOUR));
-            jedis.incrBy(hourHiveKey, amount);
+            String hourHiveKey = getHourHiveKey(scene, benefitCode, DateUtils.hourStr());
+            Long remainAmount = jedis.incrBy(hourHiveKey, amount);
+            log.info("恢复库存scene:{},benefitCode:{} 当前小时还剩库存:{}", scene, benefitCode, remainAmount);
         }
     }
 
-    private String getHourHiveKey(String scene, String benefitCode, int year, int month, int day, int hour) {
-        return String.format(ACTIVITY_BENEFIT_HOUR_AMOUNT, scene, benefitCode, StringUtils.join(year, month, day, hour));
+    private String getHourHiveKey(String scene, String benefitCode, String hourStr) {
+        return String.format(ACTIVITY_BENEFIT_HOUR_AMOUNT, scene, benefitCode, hourStr);
     }
 }

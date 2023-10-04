@@ -35,7 +35,7 @@ public class CostBenefitServiceImpl implements CostBenefitService, ApplicationCo
             if (customExtension == null) {
                 throw new BizException("No available extension", "兑换消耗配置没有找到具体的扩展点");
             }
-            Integer amount = customExtension.queryAmount();
+            Integer amount = customExtension.queryAmount(context.getUserId());
             // 兑换不满足条件
             if (amount < costConfig.getAmount()) {
                 throw new BizException(ExceptionEnum.EXCHANGE_NO_ENOUGH_COST);

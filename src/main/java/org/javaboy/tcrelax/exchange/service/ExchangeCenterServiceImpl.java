@@ -70,7 +70,7 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
      */
     @Override
     public TcResult<BenefitDTO> exchange(ExchangeRequest request) {
-        TcResult<BenefitDTO> response = null;
+        TcResult<BenefitDTO> response;
         checkRequest(request);
         String lockKey = String.format("exchange_%s_%s", request.getScene(), request.getUid());
         RLock lock = redisLock.getLock(lockKey);
@@ -92,7 +92,13 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
             // 扣减库存
             inventoryService.deductBenefitInventory(context);
             // 发放奖励,这里只记录到数据库中
-            recordService.addUserRecord(buildAwardRecord(context, request));
+            AwardRecordDTO awardRecordDTO = buildAwardRecord(context, request);
+            recordService.addUserRecord(awardRecordDTO);
+            // 记录活动级别疲劳度
+            fatigueService.recordActivityFatigue(context);
+            // 记录商品级别疲劳度
+            fatigueService.recordBenefitFatigue(context);
+            response = TcResult.success(convert(awardRecordDTO));
         } catch (BizException bizException) {
             if (context.isDeductUserAssetResult()) {
                 costBenefitService.increaseUserAsset(context);
@@ -100,6 +106,7 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
             if (context.isDeductInventoryResult()) {
                 inventoryService.increaseBenefitInventory(context);
             }
+            log.error("业务异常", bizException);
             response = TcResult.fail(bizException.getCode(), bizException.getMessage());
         } catch (Throwable t) {
             log.error("兑换出错,scene:{},benefitCode:{},uid:{},error:{}", request.getScene(), request.getBenefitCode(), request.getUid(), t.getMessage(), t);
@@ -109,6 +116,7 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
         }
         return response;
     }
+
 
     /**
      * 查看活动
@@ -163,6 +171,7 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
     private ExchangeContext buildExchangeContext(ExchangeRequest request) {
         ExchangeActivityConfig activityConfig = configLoader.getExchangeConfig(request.getScene());
         ExchangeContext context = new ExchangeContext();
+        context.setScene(request.getScene());
         context.setUserId(request.getUid());
         context.setRequest(request);
         context.setActivityConfig(activityConfig);
@@ -215,6 +224,13 @@ public class ExchangeCenterServiceImpl implements ExchangeCenterService {
         awardRecordDTO.setUid(request.getUid());
         awardRecordDTO.setOutId(request.getOutId());
         return awardRecordDTO;
+    }
+
+    private BenefitDTO convert(AwardRecordDTO awardRecordDTO){
+        BenefitDTO benefitDTO = new BenefitDTO();
+        benefitDTO.setUrl(awardRecordDTO.getUrl());
+        benefitDTO.setBenefitCode(awardRecordDTO.getBenefitCode());
+        return benefitDTO;
     }
 
 

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class CFHolidayCostBenefitExtension implements CostBenefitExtension {
 
     @Override
-    public Integer queryAmount() {
+    public Integer queryAmount(String uid) {
         return 1;
     }
 
